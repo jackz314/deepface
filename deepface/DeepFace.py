@@ -36,11 +36,12 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 tf_version = int(tf.__version__.split(".", maxsplit=1)[0])
 if tf_version == 2:
     tf.get_logger().setLevel(logging.ERROR)
+
+
 # -----------------------------------
 
 
 def build_model(model_name):
-
     """
     This function builds a deepface model
     Parameters:
@@ -95,7 +96,6 @@ def verify(
     align=True,
     normalization="base",
 ):
-
     """
     This function verifies an image pair is same person or different persons. In the background,
     verification function represents facial images as vectors and then calculates the similarity
@@ -230,7 +230,6 @@ def analyze(
     align=True,
     silent=False,
 ):
-
     """
     This function analyzes facial attributes including age, gender, emotion and race.
     In the background, analysis function builds convolutional neural network models to
@@ -391,7 +390,6 @@ def find(
     normalization="base",
     silent=False,
 ):
-
     """
     This function applies verification several times and find the identities in a database
 
@@ -604,8 +602,8 @@ def represent(
     detector_backend="opencv",
     align=True,
     normalization="base",
+    just_embedding=False
 ):
-
     """
     This function represents facial images as vectors. The function uses convolutional neural
     networks models to generate vector embeddings.
@@ -629,6 +627,8 @@ def represent(
 
             normalization (string): normalize the input image before feeding to model
 
+            just_embedding: if True, it will return only the embedding vector
+
     Returns:
             Represent function returns a list of object with multidimensional vector (embedding).
             The number of dimensions is changing based on the reference model.
@@ -641,7 +641,7 @@ def represent(
     # ---------------------------------
     # we have run pre-process in verification. so, this can be skipped if it is coming from verify.
     target_size = functions.find_target_size(model_name=model_name)
-    if detector_backend != "skip":
+    if detector_backend != "skip-all":
         img_objs = functions.extract_faces(
             img=img_path,
             target_size=target_size,
@@ -675,10 +675,15 @@ def represent(
         # represent
         if "keras" in str(type(model)):
             # new tf versions show progress bar and it is annoying
-            embedding = model.predict(img, verbose=0)[0].tolist()
+            embedding = model.predict(img, verbose=0)[0]
         else:
             # SFace and Dlib are not keras models and no verbose arguments
-            embedding = model.predict(img)[0].tolist()
+            embedding = model.predict(img)[0]
+
+        if just_embedding:
+            return embedding
+
+        embedding = embedding.tolist()
 
         resp_obj = {}
         resp_obj["embedding"] = embedding
@@ -698,7 +703,6 @@ def stream(
     time_threshold=5,
     frame_threshold=5,
 ):
-
     """
     This function applies real time face recognition and facial attribute analysis
 
@@ -753,7 +757,6 @@ def extract_faces(
     align=True,
     grayscale=False,
 ):
-
     """
     This function applies pre-processing stages of a face recognition pipeline
     including detection and alignment
