@@ -30,7 +30,6 @@ from deepface.commons import functions, realtime, distance as dst
 
 # -----------------------------------
 # configurations for dependencies
-from line_profiler_pycharm import profile
 
 warnings.filterwarnings("ignore")
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
@@ -595,7 +594,6 @@ def find(
 
     return resp_obj
 
-@profile
 def represent(
     img_path,
     model_name="VGG-Face",
