@@ -601,7 +601,8 @@ def represent(
     detector_backend="opencv",
     align=True,
     normalization="base",
-    just_embedding=False
+    just_embedding=False,
+    target_size=None,
 ):
     """
     This function represents facial images as vectors. The function uses convolutional neural
@@ -637,12 +638,14 @@ def represent(
 
     if not isinstance(model_name, str):
         model = model_name
+        if target_size is None:
+            raise ValueError("target_size must be provided if model_name is not a string")
     else:
         model = build_model(model_name)
 
     # ---------------------------------
     # we have run pre-process in verification. so, this can be skipped if it is coming from verify.
-    target_size = functions.find_target_size(model_name=model_name)
+    target_size = functions.find_target_size(model_name=model_name) if target_size is None else target_size
     if detector_backend != "skip-all":
         img_objs = functions.extract_faces(
             img=img_path,
