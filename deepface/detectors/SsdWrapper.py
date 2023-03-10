@@ -88,10 +88,10 @@ def detect_face(detector, img, align=True):
 
         for _, instance in detections_df.iterrows():
 
-            left = instance["left"]
-            right = instance["right"]
-            bottom = instance["bottom"]
-            top = instance["top"]
+            left = instance["left"] if instance["left"] > 0 else 0
+            right = instance["right"] if instance["right"] > 0 else 300
+            bottom = instance["bottom"] if instance["bottom"] > 0 else 300
+            top = instance["top"] if instance["top"] > 0 else 0
 
             detected_face = base_img[
                 int(top * aspect_ratio_y) : int(bottom * aspect_ratio_y),
