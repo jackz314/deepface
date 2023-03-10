@@ -1,4 +1,5 @@
 from deepface.detectors import FaceDetector
+import cv2
 
 # Link - https://google.github.io/mediapipe/solutions/face_detection
 
@@ -7,7 +8,7 @@ def build_model():
     import mediapipe as mp  # this is not a must dependency. do not import it in the global level.
 
     mp_face_detection = mp.solutions.face_detection
-    face_detection = mp_face_detection.FaceDetection(min_detection_confidence=0.7)
+    face_detection = mp_face_detection.FaceDetection(min_detection_confidence=0.6)
     return face_detection
 
 
@@ -17,7 +18,9 @@ def detect_face(face_detector, img, align=True):
     img_width = img.shape[1]
     img_height = img.shape[0]
 
-    results = face_detector.process(img)
+    # Convert the BGR image to RGB before processing.
+    rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    results = face_detector.process(rgb)
 
     if results.detections:
         for detection in results.detections:
