@@ -601,8 +601,10 @@ def represent(
     detector_backend="opencv",
     align=True,
     normalization="base",
-    just_embedding=False,
+    just_embeddings=False,
     target_size=None,
+    skip_but_preprocess=False,
+    return_confidence=False,
 ):
     """
     This function represents facial images as vectors. The function uses convolutional neural
@@ -627,7 +629,7 @@ def represent(
 
             normalization (string): normalize the input image before feeding to model
 
-            just_embedding: if True, it will return only the embedding vector
+            just_embeddings: if True, it will return only the embedding vectors
 
     Returns:
             Represent function returns a list of object with multidimensional vector (embedding).
@@ -646,7 +648,7 @@ def represent(
     # ---------------------------------
     # we have run pre-process in verification. so, this can be skipped if it is coming from verify.
     target_size = functions.find_target_size(model_name=model_name) if target_size is None else target_size
-    if detector_backend != "skip-all":
+    if detector_backend != "skip" or skip_but_preprocess:
         img_objs = functions.extract_faces(
             img=img_path,
             target_size=target_size,
@@ -672,8 +674,9 @@ def represent(
         img_region = [0, 0, img.shape[1], img.shape[0]]
         img_objs = [(img, img_region, 0)]
     # ---------------------------------
-
-    for img, region, _ in img_objs:
+    
+    embeddings = []
+    for img, region, confidence in img_objs:
         # custom normalization
         img = functions.normalize_input(img=img, normalization=normalization)
 
@@ -685,17 +688,20 @@ def represent(
             # SFace and Dlib are not keras models and no verbose arguments
             embedding = model.predict(img)[0]
 
-        if just_embedding:
-            return embedding
+        if just_embeddings:
+            embeddings.append(embedding)
+            continue
 
         embedding = embedding.tolist()
 
         resp_obj = {}
         resp_obj["embedding"] = embedding
         resp_obj["facial_area"] = region
+        if return_confidence:
+            resp_obj["confidence"] = confidence
         resp_objs.append(resp_obj)
 
-    return resp_objs
+    return resp_objs if not just_embeddings else embeddings
 
 
 def stream(
